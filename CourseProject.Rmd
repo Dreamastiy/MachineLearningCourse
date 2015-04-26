@@ -7,13 +7,17 @@ output: html_document
 
 **Brief Introduction**
 
-In the report we'll try to build a model for predicting "how (well)" an lifting activity was performed by the wearer(of devices such as Jawbone Up, Nike FuelBand, and Fitbit) using 'Weight Lifting Exercises Dataset'. 
+In the report we'll try to build a model for predicting "how (well)" lifting activity was performed by the wearer(of devices such as Jawbone Up, Nike FuelBand, and Fitbit) using 'Weight Lifting Exercises Dataset'. 
 
 Six young health participants were asked to perform one set of 10 repetitions of the Unilateral Dumbbell Biceps Curl in five different fashions: exactly according to the specification (Class A), throwing the elbows to the front (Class B), lifting the dumbbell only halfway (Class C), lowering the dumbbell only halfway (Class D) and throwing the hips to the front (Class E).
 
 Thanks and respect these guys for data sharing:
 
 <li>Velloso, E.; Bulling, A.; Gellersen, H.; Ugulino, W.; Fuks, H. Qualitative Activity Recognition of Weight Lifting Exercises. Proceedings of 4th International Conference in Cooperation with SIGCHI (Augmented Human '13) . Stuttgart, Germany: ACM SIGCHI, 2013.</li>
+
+ 
+If you don't like the design, you can manually load `CourseProject.html` and `CourseProject.Rmd` from here:
+https://github.com/Dreamastiy/MachineLearningCourse
 
 
 **Data loading and preprocessing**
@@ -27,21 +31,21 @@ library(dplyr)
 ```
 
 and load data into the R:
-```{r, warning=FALSE, message=FALSE, echo=FALSE}
+```{r, warning=FALSE, message=FALSE}
 # Don't be confused. I have MatLab and R projects in the same folder :)
 setwd('C:\\Users\\Dmi\\Desktop\\MatLab\\Coursera\\MachineLearning')
 data.train <- read.csv('pml-training.csv')
 data.test <- read.csv('pml-testing.csv')
 ```
 
-Now lets see what the training data we have using `glimpse` from `dplyr` package. I give the code, but the output is to big to include:
+Now lets see what the training data we have using `glimpse` from `dplyr` package. I give the code, but the output is too big to include:
 ```{r, warning=FALSE, message=FALSE, eval=FALSE}
 glimpse(data.train)
 ```
 
 From the `glimpse` output we can see that there are 160 different variables and a lot of variables are with NAs or have empty values.
 Lets clean our data from these 'bad' variables. Also lets delete first 5 variables from the data (row number, username and 3 timestamps) and omit all the residual rows with NAs. We preprocess both train and test data similary:
-```{r, warning=FALSE, message=FALSE, echo=FALSE, cache=TRUE}
+```{r, warning=FALSE, message=FALSE, cache=TRUE}
 # deleting zero variance variables
 zeroVar <- nearZeroVar(data.train)
 data.train <- data.train[,-zeroVar]
@@ -50,7 +54,7 @@ data.test <- data.test[, -zeroVar]
 manyNAs <- sapply(data.train, function(x){
                                           sum(as.integer(is.na(x))) > 19000
                                          })
-data.train <- data.train[,!manyNAs]
+data.train <- data.train[, !manyNAs]
 data.test <- data.test[, !manyNAs]
 # deleting row number, user_name, raw_timestamp_part_#, cvtd_timestamp
 data.train <- data.train[,-c(1:5)]
@@ -60,7 +64,7 @@ data.train <- na.omit(data.train)
 data.test <- na.omit(data.test)
 ```
 
-Now lets look at he cleaned data. Again I give the code but don't include output because of big size.
+Now lets look at the cleaned data. Again I give the code but don't include output because of big size:
 ```{r, warning=FALSE, message=FALSE, cache=TRUE, eval=FALSE}
 glimpse(data.train)
 
@@ -71,7 +75,8 @@ We won't center and scale data because Random Forest algorithm which we'll use i
 **Building model**
 
 Now we have our data cleaned and with 53 variables instead of 160. 
-Our task is to build a *classification model*. We'll use a Random Forest algorithm for the task.
+Our task is to build a *classification model*. We'll use a Random Forest algorithm for that.
+Our final task is to predict 20 values. It means that we roughly **need prediction accuracy more than 0.95**.
 At first lets split our data into two pieces (training and test). For training data we'll take 0.7 of the original data and the rest part will be for testing.
 
 ```{r, warning=FALSE, message=FALSE, cache=TRUE}
@@ -80,15 +85,16 @@ train.train <- data.train[train,]
 train.test <- data.train[-train,]
 ```
 
-Now time to create formula and start training our model. We'll make 20-fold cross validation with 4 repeats:
+Now we need to create formula and start training our model. We'll make 20-fold cross validation with 4 repeats:
 ```{r, warning=FALSE, message=FALSE, cache=TRUE, eval=FALSE}
 trFormula <- classe ~ .
 trControl <- trainControl(method='cv', number = 20, repeats = 4)
 train.rf <- train(trFormula, trControl=trControl, data = train.train )
 ```
-```{r, warning=FALSE, message=FALSE, cache=TRUE}
+```{r, warning=FALSE, message=FALSE, cache=TRUE, echo=FALSE}
 load('train.rf.Rda')
 ```
+
 After some time we have our model trained. Lets look at the top important variables of the model:
 ```{r, warning=FALSE, message=FALSE, cache=TRUE}
 head(varImp(train.rf)[[1]])
@@ -135,7 +141,7 @@ pml_write_files(answers)
 
 **Conclusion**
 
-We have built a model which predicts "how (well)" an lifting activity was performed. Cross validation showed accuracy between 0.9988 and 0.9997. All the required course project predictions was made correctly.
+We have built a model which predicts "how (well)" an lifting activity was performed. *Cross validation showed accuracy between 0.9988 and 0.9997, which is more than required 0.95*. All the required course project predictions were made correctly.
 
 
 

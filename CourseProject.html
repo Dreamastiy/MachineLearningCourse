@@ -69,34 +69,54 @@ img {
 
 
 <p><strong>Brief Introduction</strong></p>
-<p>In the report we’ll try to build a model for predicting “how (well)” an lifting activity was performed by the wearer(of devices such as Jawbone Up, Nike FuelBand, and Fitbit) using ‘Weight Lifting Exercises Dataset’.</p>
+<p>In the report we’ll try to build a model for predicting “how (well)” lifting activity was performed by the wearer(of devices such as Jawbone Up, Nike FuelBand, and Fitbit) using ‘Weight Lifting Exercises Dataset’.</p>
 <p>Six young health participants were asked to perform one set of 10 repetitions of the Unilateral Dumbbell Biceps Curl in five different fashions: exactly according to the specification (Class A), throwing the elbows to the front (Class B), lifting the dumbbell only halfway (Class C), lowering the dumbbell only halfway (Class D) and throwing the hips to the front (Class E).</p>
 <p>Thanks and respect these guys for data sharing:</p>
 <li>
 Velloso, E.; Bulling, A.; Gellersen, H.; Ugulino, W.; Fuks, H. Qualitative Activity Recognition of Weight Lifting Exercises. Proceedings of 4th International Conference in Cooperation with SIGCHI (Augmented Human ’13) . Stuttgart, Germany: ACM SIGCHI, 2013.
 </li>
+<p>If you don’t like the design, you can manually load <code>CourseProject.html</code> and <code>CourseProject.Rmd</code> from here: <a href="https://github.com/Dreamastiy/MachineLearningCourse" class="uri">https://github.com/Dreamastiy/MachineLearningCourse</a></p>
 <p><strong>Data loading and preprocessing</strong></p>
 <p>At first lets include all the required libraries</p>
 <pre class="r"><code>library(caret)
 library(ggplot2)
 library(dplyr)</code></pre>
 <p>and load data into the R:</p>
-<p>Now lets see what the training data we have using <code>glimpse</code> from <code>dplyr</code> package. I give the code, but the output is to big to include:</p>
+<pre class="r"><code># Don't be confused. I have MatLab and R projects in the same folder :)
+setwd('C:\\Users\\Dmi\\Desktop\\MatLab\\Coursera\\MachineLearning')
+data.train &lt;- read.csv('pml-training.csv')
+data.test &lt;- read.csv('pml-testing.csv')</code></pre>
+<p>Now lets see what the training data we have using <code>glimpse</code> from <code>dplyr</code> package. I give the code, but the output is too big to include:</p>
 <pre class="r"><code>glimpse(data.train)</code></pre>
 <p>From the <code>glimpse</code> output we can see that there are 160 different variables and a lot of variables are with NAs or have empty values. Lets clean our data from these ‘bad’ variables. Also lets delete first 5 variables from the data (row number, username and 3 timestamps) and omit all the residual rows with NAs. We preprocess both train and test data similary:</p>
-<p>Now lets look at he cleaned data. Again I give the code but don’t include output because of big size.</p>
+<pre class="r"><code># deleting zero variance variables
+zeroVar &lt;- nearZeroVar(data.train)
+data.train &lt;- data.train[,-zeroVar]
+data.test &lt;- data.test[, -zeroVar]
+# deleting variables with many NAs
+manyNAs &lt;- sapply(data.train, function(x){
+                                          sum(as.integer(is.na(x))) &gt; 19000
+                                         })
+data.train &lt;- data.train[, !manyNAs]
+data.test &lt;- data.test[, !manyNAs]
+# deleting row number, user_name, raw_timestamp_part_#, cvtd_timestamp
+data.train &lt;- data.train[,-c(1:5)]
+data.test &lt;- data.test[, -c(1:5)]
+# omit all rows with NAs
+data.train &lt;- na.omit(data.train)
+data.test &lt;- na.omit(data.test)</code></pre>
+<p>Now lets look at the cleaned data. Again I give the code but don’t include output because of big size:</p>
 <pre class="r"><code>glimpse(data.train)</code></pre>
 <p>We won’t center and scale data because Random Forest algorithm which we’ll use is rather stable with unscaled data.</p>
 <p><strong>Building model</strong></p>
-<p>Now we have our data cleaned and with 53 variables instead of 160. Our task is to build a <em>classification model</em>. We’ll use a Random Forest algorithm for the task. At first lets split our data into two pieces (training and test). For training data we’ll take 0.7 of the original data and the rest part will be for testing.</p>
+<p>Now we have our data cleaned and with 53 variables instead of 160. Our task is to build a <em>classification model</em>. We’ll use a Random Forest algorithm for that. Our final task is to predict 20 values. It means that we roughly <strong>need prediction accuracy more than 0.95</strong>. At first lets split our data into two pieces (training and test). For training data we’ll take 0.7 of the original data and the rest part will be for testing.</p>
 <pre class="r"><code>train &lt;- createDataPartition(data.train$classe, p = 0.7, list=F)
 train.train &lt;- data.train[train,]
 train.test &lt;- data.train[-train,]</code></pre>
-<p>Now time to create formula and start training our model. We’ll make 20-fold cross validation with 4 repeats:</p>
+<p>Now we need to create formula and start training our model. We’ll make 20-fold cross validation with 4 repeats:</p>
 <pre class="r"><code>trFormula &lt;- classe ~ .
 trControl &lt;- trainControl(method='cv', number = 20, repeats = 4)
 train.rf &lt;- train(trFormula, trControl=trControl, data = train.train )</code></pre>
-<pre class="r"><code>load('train.rf.Rda')</code></pre>
 <p>After some time we have our model trained. Lets look at the top important variables of the model:</p>
 <pre class="r"><code>head(varImp(train.rf)[[1]])</code></pre>
 <pre><code>##                      Overall
@@ -200,7 +220,7 @@ pml_write_files = function(x){
 }
 pml_write_files(answers)</code></pre>
 <p><strong>Conclusion</strong></p>
-<p>We have built a model which predicts “how (well)” an lifting activity was performed. Cross validation showed accuracy between 0.9988 and 0.9997. All the required course project predictions was made correctly.</p>
+<p>We have built a model which predicts “how (well)” an lifting activity was performed. <em>Cross validation showed accuracy between 0.9988 and 0.9997, which is more than required 0.95</em>. All the required course project predictions were made correctly.</p>
 
 
 </div>
