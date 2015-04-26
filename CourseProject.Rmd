@@ -1,0 +1,146 @@
+---
+title: "Machine Learning Class"
+author: "Dmitry Bodunov"
+date: "25 april 2015"
+output: html_document
+---
+
+**Brief Introduction**
+
+In the report we'll try to build a model for predicting "how (well)" an lifting activity was performed by the wearer(of devices such as Jawbone Up, Nike FuelBand, and Fitbit) using 'Weight Lifting Exercises Dataset'. 
+
+Six young health participants were asked to perform one set of 10 repetitions of the Unilateral Dumbbell Biceps Curl in five different fashions: exactly according to the specification (Class A), throwing the elbows to the front (Class B), lifting the dumbbell only halfway (Class C), lowering the dumbbell only halfway (Class D) and throwing the hips to the front (Class E).
+
+Thanks and respect these guys for data sharing:
+
+<li>Velloso, E.; Bulling, A.; Gellersen, H.; Ugulino, W.; Fuks, H. Qualitative Activity Recognition of Weight Lifting Exercises. Proceedings of 4th International Conference in Cooperation with SIGCHI (Augmented Human '13) . Stuttgart, Germany: ACM SIGCHI, 2013.</li>
+
+
+**Data loading and preprocessing**
+
+At first lets include all the required libraries
+```{r, warning=FALSE, message=FALSE}
+library(caret)
+library(ggplot2)
+library(dplyr)
+
+```
+
+and load data into the R:
+```{r, warning=FALSE, message=FALSE, echo=FALSE}
+# Don't be confused. I have MatLab and R projects in the same folder :)
+setwd('C:\\Users\\Dmi\\Desktop\\MatLab\\Coursera\\MachineLearning')
+data.train <- read.csv('pml-training.csv')
+data.test <- read.csv('pml-testing.csv')
+```
+
+Now lets see what the training data we have using `glimpse` from `dplyr` package. I give the code, but the output is to big to include:
+```{r, warning=FALSE, message=FALSE, eval=FALSE}
+glimpse(data.train)
+```
+
+From the `glimpse` output we can see that there are 160 different variables and a lot of variables are with NAs or have empty values.
+Lets clean our data from these 'bad' variables. Also lets delete first 5 variables from the data (row number, username and 3 timestamps) and omit all the residual rows with NAs. We preprocess both train and test data similary:
+```{r, warning=FALSE, message=FALSE, echo=FALSE, cache=TRUE}
+# deleting zero variance variables
+zeroVar <- nearZeroVar(data.train)
+data.train <- data.train[,-zeroVar]
+data.test <- data.test[, -zeroVar]
+# deleting variables with many NAs
+manyNAs <- sapply(data.train, function(x){
+                                          sum(as.integer(is.na(x))) > 19000
+                                         })
+data.train <- data.train[,!manyNAs]
+data.test <- data.test[, !manyNAs]
+# deleting row number, user_name, raw_timestamp_part_#, cvtd_timestamp
+data.train <- data.train[,-c(1:5)]
+data.test <- data.test[, -c(1:5)]
+# omit all rows with NAs
+data.train <- na.omit(data.train)
+data.test <- na.omit(data.test)
+```
+
+Now lets look at he cleaned data. Again I give the code but don't include output because of big size.
+```{r, warning=FALSE, message=FALSE, cache=TRUE, eval=FALSE}
+glimpse(data.train)
+
+```
+
+We won't center and scale data because Random Forest algorithm which we'll use is rather stable with unscaled data.
+
+**Building model**
+
+Now we have our data cleaned and with 53 variables instead of 160. 
+Our task is to build a *classification model*. We'll use a Random Forest algorithm for the task.
+At first lets split our data into two pieces (training and test). For training data we'll take 0.7 of the original data and the rest part will be for testing.
+
+```{r, warning=FALSE, message=FALSE, cache=TRUE}
+train <- createDataPartition(data.train$classe, p = 0.7, list=F)
+train.train <- data.train[train,]
+train.test <- data.train[-train,]
+```
+
+Now time to create formula and start training our model. We'll make 20-fold cross validation with 4 repeats:
+```{r, warning=FALSE, message=FALSE, cache=TRUE, eval=FALSE}
+trFormula <- classe ~ .
+trControl <- trainControl(method='cv', number = 20, repeats = 4)
+train.rf <- train(trFormula, trControl=trControl, data = train.train )
+```
+```{r, warning=FALSE, message=FALSE, cache=TRUE}
+load('train.rf.Rda')
+```
+After some time we have our model trained. Lets look at the top important variables of the model:
+```{r, warning=FALSE, message=FALSE, cache=TRUE}
+head(varImp(train.rf)[[1]])
+```
+
+Now lets look at a confusion matrix and plot error rate:
+```{r, warning=FALSE, message=FALSE, cache=TRUE, fig.align='center'}
+confusionMatrix(predict(train.rf, train.train), train.train$classe)
+plot(train.rf$finalModel, main='Error rate')
+```
+
+We see that our cross validation gives us an **estimation of accuracy between 0.9988 and 0.9997**. And from plot we can see that the error goes to stable level.
+
+Now lets see a confusion matrix for a prediciton and plot a nice figure for the normalized confusion matrix:
+```{r, warning=FALSE, message=FALSE, cache=TRUE, fig.align='center'}
+confusionMatrix(predict(train.rf, train.test), train.test$classe)
+input.matrix <- table(predict(train.rf, train.test), train.test$classe)
+preObj <- preProcess(input.matrix, method=c("range"))
+input.matrix.normalized <- predict(preObj, input.matrix)
+colnames(input.matrix.normalized) = c("A", "B", "C", "D", "E")
+rownames(input.matrix.normalized) = colnames(input.matrix.normalized)
+confusion <- as.data.frame(as.table(input.matrix.normalized))
+plot <- ggplot(confusion)
+plot + geom_tile(aes(x=Var1, y=Var2, fill=Freq)) + 
+       scale_x_discrete(name="Actual Class") + 
+       scale_y_discrete(name="Predicted Class") + 
+       scale_fill_gradient(breaks=seq(from=-.5, to=4, by=.2)) + 
+       labs(fill="Normalized\nFrequency")
+```
+
+And finally lets make predictions for the required 20 rows of the test data and save the output to different files:
+```{r, warning=FALSE, message=FALSE, cache=TRUE, eval=FALSE}
+answers <- predict(train.rf, data.test)
+answers <- as.character(answers)
+pml_write_files = function(x){
+     n = length(x)
+     for(i in 1:n){
+          filename = paste0("problem_id_",i,".txt")
+          write.table(x[i],file=filename,quote=FALSE,row.names=FALSE,col.names=FALSE)
+     }
+}
+pml_write_files(answers)
+```
+
+**Conclusion**
+
+We have built a model which predicts "how (well)" an lifting activity was performed. Cross validation showed accuracy between 0.9988 and 0.9997. All the required course project predictions was made correctly.
+
+
+
+
+
+
+
+
