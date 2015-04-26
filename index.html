@@ -1,25 +1,44 @@
-<!DOCTYPE html>
-<html lang="en-us">
+<!doctype html>
+<html>
   <head>
-    <meta charset="UTF-8">
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="chrome=1">
     <title>Machine learning course by Dreamastiy</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <link rel="stylesheet" type="text/css" href="stylesheets/normalize.css" media="screen">
-    <link href='http://fonts.googleapis.com/css?family=Open+Sans:400,700' rel='stylesheet' type='text/css'>
-    <link rel="stylesheet" type="text/css" href="stylesheets/stylesheet.css" media="screen">
-    <link rel="stylesheet" type="text/css" href="stylesheets/github-light.css" media="screen">
+    <link rel="stylesheet" href="stylesheets/styles.css">
+    <link rel="stylesheet" href="stylesheets/pygment_trac.css">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js"></script>
+    <script src="javascripts/respond.js"></script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <!--[if lt IE 8]>
+    <link rel="stylesheet" href="stylesheets/ie.css">
+    <![endif]-->
+    <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
+
   </head>
   <body>
-    <section class="page-header">
-      <h1 class="project-name">Machine learning course</h1>
-      <h2 class="project-tagline">Coursera Machine Learning Course Project</h2>
-      <a href="https://github.com/Dreamastiy/MachineLearningCourse" class="btn">View on GitHub</a>
-      <a href="https://github.com/Dreamastiy/MachineLearningCourse/zipball/master" class="btn">Download .zip</a>
-      <a href="https://github.com/Dreamastiy/MachineLearningCourse/tarball/master" class="btn">Download .tar.gz</a>
-    </section>
+      <div id="header">
+        <nav>
+          <li class="fork"><a href="https://github.com/Dreamastiy/MachineLearningCourse">View On GitHub</a></li>
+          <li class="downloads"><a href="https://github.com/Dreamastiy/MachineLearningCourse/zipball/master">ZIP</a></li>
+          <li class="downloads"><a href="https://github.com/Dreamastiy/MachineLearningCourse/tarball/master">TAR</a></li>
+          <li class="title">DOWNLOADS</li>
+        </nav>
+      </div><!-- end header -->
 
-    <section class="main-content">
-      <h3>
+    <div class="wrapper">
+
+      <section>
+        <div id="title">
+          <h1>Machine learning course</h1>
+          <p>Coursera Machine Learning Course Project</p>
+          <hr>
+          <span class="credits left">Project maintained by <a href="https://github.com/Dreamastiy">Dreamastiy</a></span>
+          <span class="credits right">Hosted on GitHub Pages &mdash; Theme by <a href="https://twitter.com/michigangraham">mattgraham</a></span>
+        </div>
+
+        <h3>
 <a id="brief-introduction" class="anchor" href="#brief-introduction" aria-hidden="true"><span class="octicon octicon-link"></span></a>Brief introduction</h3>
 
 <p>In the report we’ll try to build a model for predicting “how (well)” an lifting activity was performed by the wearer(of devices such as Jawbone Up, Nike FuelBand, and Fitbit) using ‘Weight Lifting Exercises Dataset’.</p>
@@ -80,17 +99,45 @@ data.test &lt;- na.omit(data.test)
 <pre><code>glimpse(data.train)
 </code></pre>
 
+<p>We won’t center and scale data because Random Forest algorithm which we’ll use is rather stable with unscaled data.</p>
+
+<h3>
+<a id="building-model" class="anchor" href="#building-model" aria-hidden="true"><span class="octicon octicon-link"></span></a>Building model</h3>
+
+<p>Now we have our data cleaned and with 53 variables instead of 160. Our task is to build a classification model. We’ll use a Random Forest algorithm for the task. At first lets split our data into two pieces (training and test). For training data we’ll take 0.7 of the original data and the rest part will be for testing.</p>
+
+<pre><code>train &lt;- createDataPartition(data.train$classe, p = 0.7, list=F)
+train.train &lt;- data.train[train,]
+train.test &lt;- data.train[-train,]
+</code></pre>
+
+<p>Now time to create formula and start training our model. We’ll make 20-fold cross validation with 4 repeats:</p>
+
+<pre><code>trFormula &lt;- classe ~ .
+trControl &lt;- trainControl(method='cv', number = 20, repeats = 4)
+train.rf &lt;- train(trFormula, trControl=trControl, data = train.train )
+</code></pre>
+
+<p>After some time we have our model trained. Lets look at the top important variables of the model:</p>
+
+<pre><code>head(varImp(train.rf)[[1]])
+</code></pre>
+
+<pre><code>##                      Overall
+## num_window       100.0000000
+## roll_belt         64.0773568
+## pitch_belt        28.3311490
+## yaw_belt          32.3988043
+## total_accel_belt   2.0684927
+## gyros_belt_x       0.9213126
+</code></pre>
 
 
-      <footer class="site-footer">
-        <span class="site-footer-owner"><a href="https://github.com/Dreamastiy/MachineLearningCourse">Machine learning course</a> is maintained by <a href="https://github.com/Dreamastiy">Dreamastiy</a>.</span>
+      </section>
 
-        <span class="site-footer-credits">This page was generated by <a href="https://pages.github.com">GitHub Pages</a> using the <a href="https://github.com/jasonlong/cayman-theme">Cayman theme</a> by <a href="https://twitter.com/jasonlong">Jason Long</a>.</span>
-      </footer>
-
-    </section>
-
-            <script type="text/javascript">
+    </div>
+    <!--[if !IE]><script>fixScale(document);</script><![endif]-->
+              <script type="text/javascript">
             var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");
             document.write(unescape("%3Cscript src='" + gaJsHost + "google-analytics.com/ga.js' type='text/javascript'%3E%3C/script%3E"));
           </script>
@@ -103,4 +150,3 @@ data.test &lt;- na.omit(data.test)
 
   </body>
 </html>
-
