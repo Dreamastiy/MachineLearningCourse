@@ -1,43 +1,33 @@
-<!doctype html>
+<!DOCTYPE html>
 <html>
   <head>
-    <meta charset="utf-8">
+    <meta charset='utf-8'>
     <meta http-equiv="X-UA-Compatible" content="chrome=1">
+
+    <link rel="stylesheet" type="text/css" href="stylesheets/stylesheet.css" media="screen">
+    <link rel="stylesheet" type="text/css" href="stylesheets/pygment_trac.css" media="screen">
+    <link rel="stylesheet" type="text/css" href="stylesheets/print.css" media="print">
+
     <title>Machine learning course by Dreamastiy</title>
-    <link rel="stylesheet" href="stylesheets/styles.css">
-    <link rel="stylesheet" href="stylesheets/pygment_trac.css">
-    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js"></script>
-    <script src="javascripts/respond.js"></script>
-    <!--[if lt IE 9]>
-      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
-    <![endif]-->
-    <!--[if lt IE 8]>
-    <link rel="stylesheet" href="stylesheets/ie.css">
-    <![endif]-->
-    <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
-
   </head>
+
   <body>
-      <div id="header">
-        <nav>
-          <li class="fork"><a href="https://github.com/Dreamastiy/MachineLearningCourse">View On GitHub</a></li>
-          <li class="downloads"><a href="https://github.com/Dreamastiy/MachineLearningCourse/zipball/master">ZIP</a></li>
-          <li class="downloads"><a href="https://github.com/Dreamastiy/MachineLearningCourse/tarball/master">TAR</a></li>
-          <li class="title">DOWNLOADS</li>
-        </nav>
-      </div><!-- end header -->
 
-    <div class="wrapper">
+    <header>
+      <div class="container">
+        <h1>Machine learning course</h1>
+        <h2>Coursera Machine Learning Course Project</h2>
 
-      <section>
-        <div id="title">
-          <h1>Machine learning course</h1>
-          <p>Coursera Machine Learning Course Project</p>
-          <hr>
-          <span class="credits left">Project maintained by <a href="https://github.com/Dreamastiy">Dreamastiy</a></span>
-          <span class="credits right">Hosted on GitHub Pages &mdash; Theme by <a href="https://twitter.com/michigangraham">mattgraham</a></span>
-        </div>
+        <section id="downloads">
+          <a href="https://github.com/Dreamastiy/MachineLearningCourse/zipball/master" class="btn">Download as .zip</a>
+          <a href="https://github.com/Dreamastiy/MachineLearningCourse/tarball/master" class="btn">Download as .tar.gz</a>
+          <a href="https://github.com/Dreamastiy/MachineLearningCourse" class="btn btn-github"><span class="icon"></span>View on GitHub</a>
+        </section>
+      </div>
+    </header>
 
+    <div class="container">
+      <section id="main_content">
         <h3>
 <a id="brief-introduction" class="anchor" href="#brief-introduction" aria-hidden="true"><span class="octicon octicon-link"></span></a>Brief introduction</h3>
 
@@ -56,48 +46,47 @@
 
 <p>At first lets include all the required libraries</p>
 
-<pre><code>library(caret)
-library(ggplot2)
-library(dplyr)
-</code></pre>
+<div class="highlight highlight-r"><pre>library(<span class="pl-smi">caret</span>)
+library(<span class="pl-smi">ggplot2</span>)
+library(<span class="pl-smi">dplyr</span>)</pre></div>
 
 <p>and load data into the R:</p>
 
-<pre><code># Don't be confused. I have MatLab and R projects in the same folder :)
-setwd('C:\\Users\\Dmi\\Desktop\\MatLab\\Coursera\\MachineLearning')
-data.train &lt;- read.csv('pml-training.csv')
-data.test &lt;- read.csv('pml-testing.csv')
-</code></pre>
+<div class="highlight highlight-r"><pre><span class="pl-c"># Don't be confused. I have MatLab and R projects in the same folder :)</span>
+
+setwd(<span class="pl-s"><span class="pl-pds">'</span>C:<span class="pl-cce">\\</span>Users<span class="pl-cce">\\</span>Dmi<span class="pl-cce">\\</span>Desktop<span class="pl-cce">\\</span>MatLab<span class="pl-cce">\\</span>Coursera<span class="pl-cce">\\</span>MachineLearning<span class="pl-pds">'</span></span>)
+<span class="pl-smi">data.train</span> <span class="pl-k">&lt;-</span> read.csv(<span class="pl-s"><span class="pl-pds">'</span>pml-training.csv<span class="pl-pds">'</span></span>)
+<span class="pl-smi">data.test</span> <span class="pl-k">&lt;-</span> read.csv(<span class="pl-s"><span class="pl-pds">'</span>pml-testing.csv<span class="pl-pds">'</span></span>)</pre></div>
 
 <p>Now lets see what the training data we have using <code>glimpse</code> from <code>dplyr</code> package. I give the code, but the output is to big to include:</p>
 
-<pre><code>glimpse(data.train)
-</code></pre>
+<div class="highlight highlight-r"><pre>glimpse(<span class="pl-smi">data.train</span>)</pre></div>
 
 <p>From the <code>glimpse</code> output we can see that there are 160 different variables and a lot of variables are with NAs or have empty values. Lets clean our data from these ‘bad’ variables. Also lets delete first 5 variables from the data (row number, username and 3 timestamps) and omit all the residual rows with NAs. We preprocess both train and test data similary:</p>
 
-<pre><code># deleting zero variance variables
-zeroVar &lt;- nearZeroVar(data.train)
-data.train &lt;- data.train[,-zeroVar]
-data.test &lt;- data.test[, -zeroVar]
-# deleting variables with many NAs
-manyNAs &lt;- sapply(data.train, function(x){
-                                          sum(as.integer(is.na(x))) &gt; 19000
+<div class="highlight highlight-r"><pre><span class="pl-c"># deleting zero variance variables</span>
+<span class="pl-smi">zeroVar</span> <span class="pl-k">&lt;-</span> nearZeroVar(<span class="pl-smi">data.train</span>)
+<span class="pl-smi">data.train</span> <span class="pl-k">&lt;-</span> <span class="pl-smi">data.train</span>[,<span class="pl-k">-</span><span class="pl-smi">zeroVar</span>]
+<span class="pl-smi">data.test</span> <span class="pl-k">&lt;-</span> <span class="pl-smi">data.test</span>[, <span class="pl-k">-</span><span class="pl-smi">zeroVar</span>]
+
+<span class="pl-c"># deleting variables with many NAs</span>
+<span class="pl-smi">manyNAs</span> <span class="pl-k">&lt;-</span> sapply(<span class="pl-smi">data.train</span>, <span class="pl-k">function</span>(<span class="pl-smi">x</span>){
+                                          sum(as.integer(is.na(<span class="pl-smi">x</span>))) <span class="pl-k">&gt;</span> <span class="pl-c1">19000</span>
                                          })
-data.train &lt;- data.train[,!manyNAs]
-data.test &lt;- data.test[, !manyNAs]
-# deleting row number, user_name, raw_timestamp_part_#, cvtd_timestamp
-data.train &lt;- data.train[,-c(1:5)]
-data.test &lt;- data.test[, -c(1:5)]
-# omit all rows with NAs
-data.train &lt;- na.omit(data.train)
-data.test &lt;- na.omit(data.test)
-</code></pre>
+<span class="pl-smi">data.train</span> <span class="pl-k">&lt;-</span> <span class="pl-smi">data.train</span>[,<span class="pl-k">!</span><span class="pl-smi">manyNAs</span>]
+<span class="pl-smi">data.test</span> <span class="pl-k">&lt;-</span> <span class="pl-smi">data.test</span>[, <span class="pl-k">!</span><span class="pl-smi">manyNAs</span>]
+
+<span class="pl-c"># deleting row number, user_name, raw_timestamp_part_#, cvtd_timestamp</span>
+<span class="pl-smi">data.train</span> <span class="pl-k">&lt;-</span> <span class="pl-smi">data.train</span>[,<span class="pl-k">-</span>c(<span class="pl-c1">1</span><span class="pl-k">:</span><span class="pl-c1">5</span>)]
+<span class="pl-smi">data.test</span> <span class="pl-k">&lt;-</span> <span class="pl-smi">data.test</span>[, <span class="pl-k">-</span>c(<span class="pl-c1">1</span><span class="pl-k">:</span><span class="pl-c1">5</span>)]
+
+<span class="pl-c"># omit all rows with NAs</span>
+<span class="pl-smi">data.train</span> <span class="pl-k">&lt;-</span> na.omit(<span class="pl-smi">data.train</span>)
+<span class="pl-smi">data.test</span> <span class="pl-k">&lt;-</span> na.omit(<span class="pl-smi">data.test</span>)</pre></div>
 
 <p>Now lets look at he cleaned data. Again I give the code but don’t include output because of big size.</p>
 
-<pre><code>glimpse(data.train)
-</code></pre>
+<div class="highlight highlight-r"><pre>glimpse(<span class="pl-smi">data.train</span>)</pre></div>
 
 <p>We won’t center and scale data because Random Forest algorithm which we’ll use is rather stable with unscaled data.</p>
 
@@ -106,22 +95,19 @@ data.test &lt;- na.omit(data.test)
 
 <p>Now we have our data cleaned and with 53 variables instead of 160. Our task is to build a classification model. We’ll use a Random Forest algorithm for the task. At first lets split our data into two pieces (training and test). For training data we’ll take 0.7 of the original data and the rest part will be for testing.</p>
 
-<pre><code>train &lt;- createDataPartition(data.train$classe, p = 0.7, list=F)
-train.train &lt;- data.train[train,]
-train.test &lt;- data.train[-train,]
-</code></pre>
+<div class="highlight highlight-r"><pre><span class="pl-smi">train</span> <span class="pl-k">&lt;-</span> createDataPartition(<span class="pl-smi">data.train</span><span class="pl-k">$</span><span class="pl-smi">classe</span>, <span class="pl-v">p</span> <span class="pl-k">=</span> <span class="pl-c1">0.7</span>, <span class="pl-v">list</span><span class="pl-k">=</span><span class="pl-c1">F</span>)
+<span class="pl-smi">train.train</span> <span class="pl-k">&lt;-</span> <span class="pl-smi">data.train</span>[<span class="pl-smi">train</span>,]
+<span class="pl-smi">train.test</span> <span class="pl-k">&lt;-</span> <span class="pl-smi">data.train</span>[<span class="pl-k">-</span><span class="pl-smi">train</span>,]</pre></div>
 
 <p>Now time to create formula and start training our model. We’ll make 20-fold cross validation with 4 repeats:</p>
 
-<pre><code>trFormula &lt;- classe ~ .
-trControl &lt;- trainControl(method='cv', number = 20, repeats = 4)
-train.rf &lt;- train(trFormula, trControl=trControl, data = train.train )
-</code></pre>
+<div class="highlight highlight-r"><pre><span class="pl-smi">trFormula</span> <span class="pl-k">&lt;-</span> <span class="pl-smi">classe</span> <span class="pl-k">~</span> .
+<span class="pl-smi">trControl</span> <span class="pl-k">&lt;-</span> trainControl(<span class="pl-v">method</span><span class="pl-k">=</span><span class="pl-s"><span class="pl-pds">'</span>cv<span class="pl-pds">'</span></span>, <span class="pl-v">number</span> <span class="pl-k">=</span> <span class="pl-c1">20</span>, <span class="pl-v">repeats</span> <span class="pl-k">=</span> <span class="pl-c1">4</span>)
+<span class="pl-smi">train.rf</span> <span class="pl-k">&lt;-</span> train(<span class="pl-smi">trFormula</span>, <span class="pl-v">trControl</span><span class="pl-k">=</span><span class="pl-smi">trControl</span>, <span class="pl-v">data</span> <span class="pl-k">=</span> <span class="pl-smi">train.train</span> )</pre></div>
 
 <p>After some time we have our model trained. Lets look at the top important variables of the model:</p>
 
-<pre><code>head(varImp(train.rf)[[1]])
-</code></pre>
+<div class="highlight highlight-r"><pre>head(varImp(<span class="pl-smi">train.rf</span>)[[<span class="pl-c1">1</span>]])</pre></div>
 
 <pre><code>##                      Overall
 ## num_window         100.00000
@@ -134,8 +120,7 @@ train.rf &lt;- train(trFormula, trControl=trControl, data = train.train )
 
 <p>Now lets look at a confusion matrix and plot error rate:</p>
 
-<pre><code>confusionMatrix(predict(train.rf, train.train), train.train$classe)
-</code></pre>
+<div class="highlight highlight-r"><pre>confusionMatrix(predict(<span class="pl-smi">train.rf</span>, <span class="pl-smi">train.train</span>), <span class="pl-smi">train.train</span><span class="pl-k">$</span><span class="pl-smi">classe</span>)</pre></div>
 
 <pre><code>## Confusion Matrix and Statistics
 ## 
@@ -172,9 +157,8 @@ train.rf &lt;- train(trFormula, trControl=trControl, data = train.train )
 
 
       </section>
-
     </div>
-    <!--[if !IE]><script>fixScale(document);</script><![endif]-->
+
               <script type="text/javascript">
             var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");
             document.write(unescape("%3Cscript src='" + gaJsHost + "google-analytics.com/ga.js' type='text/javascript'%3E%3C/script%3E"));
