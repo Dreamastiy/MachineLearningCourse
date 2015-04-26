@@ -124,12 +124,50 @@ train.rf &lt;- train(trFormula, trControl=trControl, data = train.train )
 </code></pre>
 
 <pre><code>##                      Overall
-## num_window       100.0000000
-## roll_belt         64.0773568
-## pitch_belt        28.3311490
-## yaw_belt          32.3988043
+## num_window         100.00000
+## roll_belt          64.077356
+## pitch_belt         28.331149
+## yaw_belt           32.398804
 ## total_accel_belt   2.0684927
 ## gyros_belt_x       0.9213126
+</code></pre>
+
+<p>Now lets look at a confusion matrix and plot error rate:</p>
+
+<pre><code>confusionMatrix(predict(train.rf, train.train), train.train$classe)
+</code></pre>
+
+<pre><code>## Confusion Matrix and Statistics
+## 
+##           Reference
+## Prediction    A    B    C    D    E
+##          A 3906    3    0    0    0
+##          B    0 2655    0    0    0
+##          C    0    0 2394    4    0
+##          D    0    0    2 2248    0
+##          E    0    0    0    0 2525
+## 
+## Overall Statistics
+##                                           
+##                Accuracy : 0.9993          
+##                  95% CI : (0.9988, 0.9997)
+##     No Information Rate : 0.2843          
+##     P-Value [Acc &gt; NIR] : &lt; 2.2e-16       
+##                                           
+##                   Kappa : 0.9992          
+##  Mcnemar's Test P-Value : NA              
+## 
+## Statistics by Class:
+## 
+##                      Class: A Class: B Class: C Class: D Class: E
+## Sensitivity            1.0000   0.9989   0.9992   0.9982   1.0000
+## Specificity            0.9997   1.0000   0.9996   0.9998   1.0000
+## Pos Pred Value         0.9992   1.0000   0.9983   0.9991   1.0000
+## Neg Pred Value         1.0000   0.9997   0.9998   0.9997   1.0000
+## Prevalence             0.2843   0.1935   0.1744   0.1639   0.1838
+## Detection Rate         0.2843   0.1933   0.1743   0.1636   0.1838
+## Detection Prevalence   0.2846   0.1933   0.1746   0.1638   0.1838
+## Balanced Accuracy      0.9998   0.9994   0.9994   0.9990   1.0000
 </code></pre>
 
 
