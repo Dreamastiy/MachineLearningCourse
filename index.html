@@ -28,15 +28,18 @@
       </header>
       <section>
         <h3>
-<p><strong>Brief Introduction</strong></p>
+<a id="brief-introduction" class="anchor" href="#brief-introduction" aria-hidden="true"><span class="octicon octicon-link"></span></a>Brief introduction</h3>
+
 <p>In the report we’ll try to build a model for predicting “how (well)” lifting activity was performed by the wearer(of devices such as Jawbone Up, Nike FuelBand, and Fitbit) using ‘Weight Lifting Exercises Dataset’.</p>
 <p>Six young health participants were asked to perform one set of 10 repetitions of the Unilateral Dumbbell Biceps Curl in five different fashions: exactly according to the specification (Class A), throwing the elbows to the front (Class B), lifting the dumbbell only halfway (Class C), lowering the dumbbell only halfway (Class D) and throwing the hips to the front (Class E).</p>
 <p>Thanks and respect these guys for data sharing:</p>
 <li>
 Velloso, E.; Bulling, A.; Gellersen, H.; Ugulino, W.; Fuks, H. Qualitative Activity Recognition of Weight Lifting Exercises. Proceedings of 4th International Conference in Cooperation with SIGCHI (Augmented Human ’13) . Stuttgart, Germany: ACM SIGCHI, 2013.
 </li>
+<p></p>
 <p>If you don’t like the design, you can manually load <code>CourseProject.html</code> and <code>CourseProject.Rmd</code> from here: <a href="https://github.com/Dreamastiy/MachineLearningCourse" class="uri">https://github.com/Dreamastiy/MachineLearningCourse</a></p>
-<p><strong>Data loading and preprocessing</strong></p>
+<h3>
+<a id="data-loading-and-preprocessing" class="anchor" href="#data-loading-and-preprocessing" aria-hidden="true"><span class="octicon octicon-link"></span></a>Data loading and preprocessing</h3>
 <p>At first lets include all the required libraries</p>
 <pre class="r"><code>library(caret)
 library(ggplot2)
@@ -68,7 +71,8 @@ data.test &lt;- na.omit(data.test)</code></pre>
 <p>Now lets look at the cleaned data. Again I give the code but don’t include output because of big size:</p>
 <pre class="r"><code>glimpse(data.train)</code></pre>
 <p>We won’t center and scale data because Random Forest algorithm which we’ll use is rather stable with unscaled data.</p>
-<p><strong>Building model</strong></p>
+<h3>
+<a id="building-model" class="anchor" href="#building-model" aria-hidden="true"><span class="octicon octicon-link"></span></a>Building model</h3>
 <p>Now we have our data cleaned and with 53 variables instead of 160. Our task is to build a <em>classification model</em>. We’ll use a Random Forest algorithm for that. Our final task is to predict 20 values. It means that we roughly <strong>need prediction accuracy more than 0.95</strong>. At first lets split our data into two pieces (training and test). For training data we’ll take 0.7 of the original data and the rest part will be for testing.</p>
 <pre class="r"><code>train &lt;- createDataPartition(data.train$classe, p = 0.7, list=F)
 train.train &lt;- data.train[train,]
